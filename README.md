@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://nuextract.ai/">
-          <img src="numind.svg" width="400" height="400"/>
+          <img src="assests/numind.svg" width="400" height="400"/>
     </a>
 </p>
 <p align="center">
@@ -39,7 +39,7 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 ### Win/Draw/Lose-rate against others models (image-only):
 <p align="center">
-<img src="bar plot.png" width="700"/>
+<img src="assests/bar plot.png" width="700"/>
 </p>
 
 
@@ -48,11 +48,10 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 1. **SFT**: Single epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
 2. **RL (GRPO)**: RL phase using a layout-centric reward (5K difficult image examples).
 
-
 ## Example:
 
 <p align="center">
-<img src="ex1.png" width="500"/>
+<img src="assests/ex1.png" width="500"/>
 </p>
 
 ```
