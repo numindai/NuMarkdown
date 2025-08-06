@@ -195,7 +195,7 @@ chat_response = client.chat.completions.create(
 
 )
 
-reasoning = chat_response.choices[0].message.content.split("<thinking>")[1].split("</thinking>")[0]
+reasoning = chat_response.choices[0].message.content.split("<thining>")[1].split("</thining>")[0]
 answer  = chat_response.choices[0].message.content.split("<answer>")[1].split("</answer>")[0]
 ```
 
