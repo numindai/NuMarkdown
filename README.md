@@ -1,24 +1,26 @@
 <p align="center">
     <a href="https://nuextract.ai/">
-          <img src="assets/numind.svg" width="400" height="400"/>
+          <img src="numind.svg" width="400" height="400"/>
     </a>
 </p>
 <p align="center">
-        🖥️ <a href="https://nuextract.ai/">API / Platform</a>&nbsp&nbsp  | &nbsp&nbsp🤗 <a href="https://huggingface.co/numind/NuMarkdown-reasoning">Hugging Face</a>&nbsp&nbsp | &nbsp&nbsp🗣️ <a href="https://discord.gg/3tsEtJNCDe">Discord</a>
+        🖥️ <a href="https://nuextract.ai/">API / Platform</a>&nbsp&nbsp | &nbsp&nbsp🗣️ <a href="https://discord.gg/3tsEtJNCDe">Discord</a>
 </p>
+
+---
 
 # NuMarkdown-reasoning 📄
 
-**NuMarkdown-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
+**NuMarkdown-8B-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
 It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to-Markdown pairs, followed by an RL phase (GRPO) with a layout-centric reward.
 
-*(Note: the number of thinking tokens can vary from 20% to 5X the number of tokens of the final answers)*
+*(Note: the number of thinking tokens can vary from 20% to 500% the number of tokens in the final answer)*
 
 ## Results
 
 **NuMarkdown-reasoning** is significantly better than similar size non-reasoning models trained for markdown generation on complex documents, and achieves competitive results against top closed source alternatives.
 
-### Arena ranking agains popular alternative (using trueskill-2 ranking system, with around 500 votes):
+### Arena ranking against popular alternatives (using trueskill-2 ranking system, with around 500 anonymized votes):
 <p align="center">
   
 | Rank | Model                                   | μ     | σ    | μ − 3σ |
@@ -35,22 +37,22 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 *We plan to realease a markdown arena, similar to llmArena, for complex document-to-markdown tasks to provide a tool to evaluate different solutions.*
 
-### Win/Draw/Loose-rate against others models (image-only):
+### Win/Draw/Lose-rate against others models (image-only):
 <p align="center">
-<img src="assets/bar plot.png" width="700"/>
+<img src="bar plot.png" width="700"/>
 </p>
 
 
 ## Training
 
-1. **SFT**: One-epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
+1. **SFT**: Single epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
 2. **RL (GRPO)**: RL phase using a layout-centric reward (5K difficult image examples).
 
 
 ## Example:
 
 <p align="center">
-<img src="assets/ex1.png" width="500"/>
+<img src="ex1.png" width="500"/>
 </p>
 
 ```
@@ -150,7 +152,7 @@ Pàgina 2 de 2
 
 ## vLLM:
 ```
-vllm serve numind/NuMarkdown-reasoning --trust_remote_code --limit-mm-per-prompt image=1
+vllm serve numind/NuMarkdown-8B-reasoning --trust_remote_code --limit-mm-per-prompt image=1
 ```
 
 ```python
@@ -176,19 +178,24 @@ def encode_image(image_path):
 base64_image = encode_image("invoice.png")
 
 chat_response = client.chat.completions.create(
-    model="numind/NuMarkdown-reasoning",
-    temperature=0,
+    model="numind/NuMarkdown-8B-reasoning",
+    temperature=0.7,
     messages=[
-        {
-            "role": "user", 
-            "content": [
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", 
+                         "image_url": {"url": data_url},
+                         "min_pixels": 100 * 28 * 28,
+                         "max_pixels": 5000 * 28 * 28,},
+                        
+                    ],
+                },
             ],
-        },
-    ]
+
 )
 
-reasoning = chat_response.choices[0].message.content.split("<thining>")[1].split("</thining>")[0]
+reasoning = chat_response.choices[0].message.content.split("<thinking>")[1].split("</thinking>")[0]
 answer  = chat_response.choices[0].message.content.split("<answer>")[1].split("</answer>")[0]
 ```
 
@@ -201,11 +208,12 @@ import torch
 from PIL import Image
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
-model_id = "Numind/NuMarkdown-reasoning"       
+model_id = "numind/NuMarkdown-8B-reasoning"       
 
 processor = AutoProcessor.from_pretrained(
     model_id,
-    trust_remote_code=True,       
+    trust_remote_code=True,
+    min_pixels=100*28*28, max_pixels=5000*28*28   
 )
 
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
@@ -227,10 +235,10 @@ prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_
 enc = processor(text=prompt, images=[img], return_tensors="pt").to(model.device)
 
 with torch.no_grad():
-    out = model.generate(**enc, max_new_tokens=5000)
+    out = model.generate(**enc, temperature = 0.7, max_new_tokens=5000)
 
-response = processor.decode(out[0])
+out = processor.decode(out[0])
 
-reasoning = response.split("<thining>")[1].split("</thining>")[0]
-answer  = response.split("<answer>")[1].split("</answer>")[0]
+reasoning = out.split("<thinking>")[1].split("</thinking>")[0]
+answer  = out.split("<answer>")[1].split("</answer>")[0]
 ```
