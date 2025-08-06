@@ -9,16 +9,16 @@
 
 # NuMarkdown-reasoning 📄
 
-**NuMarkdown-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
+**NuMarkdown-8B-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
 It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to-Markdown pairs, followed by an RL phase (GRPO) with a layout-centric reward.
 
-*(Note: the number of thinking tokens can vary from 20% to 5X the number of tokens of the final answers)*
+*(Note: the number of thinking tokens can vary from 20% to 500% the number of tokens in the final answer)*
 
 ## Results
 
 **NuMarkdown-reasoning** is significantly better than similar size non-reasoning models trained for markdown generation on complex documents, and achieves competitive results against top closed source alternatives.
 
-### Arena ranking agains popular alternative (using trueskill-2 ranking system, with around 500 votes):
+### Arena ranking against popular alternatives (using trueskill-2 ranking system, with around 500 anonymized votes):
 <p align="center">
   
 | Rank | Model                                   | μ     | σ    | μ − 3σ |
@@ -35,17 +35,16 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 *We plan to realease a markdown arena, similar to llmArena, for complex document-to-markdown tasks to provide a tool to evaluate different solutions.*
 
-### Win/Draw/Loose-rate against others models (image-only):
+### Win/Draw/Lose-rate against others models (image-only):
 <p align="center">
-<img src="assets/bar plot.png" width="700"/>
+<img src="bar plot.png" width="700"/>
 </p>
 
 
 ## Training
 
-1. **SFT**: One-epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
+1. **SFT**: Single epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
 2. **RL (GRPO)**: RL phase using a layout-centric reward (5K difficult image examples).
-
 
 ## Example:
 
