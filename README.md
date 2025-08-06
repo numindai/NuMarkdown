@@ -1,3 +1,12 @@
+<p align="center">
+    <a href="https://nuextract.ai/">
+          <img src="assets/numind.svg" width="400" height="400"/>
+    </a>
+</p>
+<p align="center">
+        🖥️ <a href="https://nuextract.ai/">API / Platform</a>&nbsp&nbsp | &nbsp&nbsp🗣️ <a href="https://discord.gg/3tsEtJNCDe">Discord</a>
+</p>
+
 # NuMarkdown-reasoning 📄
 
 **NuMarkdown-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
@@ -28,7 +37,7 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 ### Win/Draw/Loose-rate against others models (image-only):
 <p align="center">
-<img src="bar plot.png" width="700"/>
+<img src="assets/bar plot.png" width="700"/>
 </p>
 
 
@@ -41,7 +50,7 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 ## Example:
 
 <p align="center">
-<img src="ex1.png" width="500"/>
+<img src="assets/ex1.png" width="500"/>
 </p>
 
 ```
