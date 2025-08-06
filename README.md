@@ -37,7 +37,7 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 ### Win/Draw/Lose-rate against others models (image-only):
 <p align="center">
-<img src="bar plot.png" width="700"/>
+<img src="assets/bar plot.png" width="700"/>
 </p>
 
 
