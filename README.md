@@ -220,5 +220,8 @@ enc = processor(text=prompt, images=[img], return_tensors="pt").to(model.device)
 with torch.no_grad():
     out = model.generate(**enc, max_new_tokens=5000)
 
-print(processor.decode(out[0].split("<answer>")[1].split("</answer>")[0], skip_special_tokens=True))
+response = processor.decode(out[0])
+
+reasoning = response.split("<thining>")[1].split("</thining>")[0]
+answer  = response.split("<answer>")[1].split("</answer>")[0]
 ```
