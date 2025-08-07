@@ -208,7 +208,7 @@ import torch
 from PIL import Image
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
-model_id = "numind/NuMarkdown-8B-reasoning"       
+model_id = "numind/NuMarkdown-8B-Thinking"       
 
 processor = AutoProcessor.from_pretrained(
     model_id,
