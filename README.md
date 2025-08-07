@@ -9,18 +9,19 @@
 
 ---
 
-# NuMarkdown-reasoning 📄
+# Reasoning comes to OCR  🧠✨📄🤘
 
-**NuMarkdown-8B-reasoning** is the first reasoning vision-language model trained specifically to convert documents into clean GitHub-flavoured Markdown.
-It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to-Markdown pairs, followed by an RL phase (GRPO) with a layout-centric reward.
+**NuMarkdown-8B-Thinking** is the first reasoning OCR VLM. It is specifically trained to convert documents into clean Markdown files, well suited for RAG applications. It generates thinking tokens to figure out the layout of the document before generating the Markdown file.
+It is particularly good at understanding documents with weird layouts and complex tables. The number of thinking tokens can vary from 20% to 500% of the final answer, depending on the task difficulty.
 
-*(Note: the number of thinking tokens can vary from 20% to 500% the number of tokens in the final answer)*
+**NuMarkdown-8B-Thinking** is a fine-tune of **Qwen 2.5-VL-7B** on synthetic Doc &rarr; Reasoning &rarr; Markdown examples, followed by an RL phase (GRPO) with a layout-centric reward.
 
 ## Results
 
-**NuMarkdown-reasoning** is significantly better than similar size non-reasoning models trained for markdown generation on complex documents, and achieves competitive results against top closed source alternatives.
+**NuMarkdown-8B-Thinking** is outperforming generic non-reasoning models like GPT-4o and specialized OCR models like OCRFlux. 
+It is competitive against large reasoning closed-source models like Gemini 2.5.
 
-### Arena ranking against popular alternatives (using trueskill-2 ranking system, with around 500 anonymized votes):
+### Arena ranking against popular alternatives (using trueskill-2 ranking system, with around 500 model-anonymized votes):
 <p align="center">
   
 | Rank | Model                                   | μ     | σ    | μ − 3σ |
@@ -45,8 +46,8 @@ It is a fine-tune of **Qwen 2.5-VL-7B** using ~10k synthetic Doc-to-Reasoning-to
 
 ## Training
 
-1. **SFT**: Single epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs (10K input/output pairs).  
-2. **RL (GRPO)**: RL phase using a layout-centric reward (5K difficult image examples).
+1. **SFT**: Single epoch supervised fine-tuning on synthetic reasoning traces generated from public PDFs.  
+2. **RL (GRPO)**: RL phase using a layout-centric reward with difficult image examples.
 
 ## Example:
 
@@ -151,11 +152,10 @@ Pàgina 2 de 2
 
 ## vLLM:
 ```
-vllm serve numind/NuMarkdown-8B-reasoning --trust_remote_code --limit-mm-per-prompt image=1
+vllm serve numind/NuMarkdown-8B-Thinking --trust_remote_code --limit-mm-per-prompt image=1
 ```
 
 ```python
-import json
 from openai import OpenAI
 import base64
 
@@ -174,35 +174,36 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-base64_image = encode_image("invoice.png")
+base64_image = encode_image("image.png")
+data_url = f"data:image/jpeg;base64,{base64_image}"
 
 chat_response = client.chat.completions.create(
-    model="numind/NuMarkdown-8B-reasoning",
+    model="numind/NuMarkdown-8B-Thinking",
     temperature=0.7,
     messages=[
+        {
+            "role": "user",
+            "content": [
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "image_url", 
-                         "image_url": {"url": data_url},
-                         "min_pixels": 100 * 28 * 28,
-                         "max_pixels": 5000 * 28 * 28,},
-                        
-                    ],
+                    "type": "image_url", 
+                    "image_url": {"url": data_url},
+                    "min_pixels": 100 * 28 * 28,
+                    "max_pixels": 5000 * 28 * 28,
                 },
             ],
-
+        },
+    ]
 )
 
-reasoning = chat_response.choices[0].message.content.split("<thining>")[1].split("</thining>")[0]
-answer  = chat_response.choices[0].message.content.split("<answer>")[1].split("</answer>")[0]
+result = chat_response.choices[0].message.content
+reasoning = result.split("<think>")[1].split("</think>")[0]
+answer  = result.split("<answer>")[1].split("</answer>")[0]
+print(answer)
 ```
 
 
 ## 🤗 Transformers:
 ```python
-from __future__ import annotations
-
 import torch
 from PIL import Image
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
@@ -223,7 +224,7 @@ model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     trust_remote_code=True,
 )
 
-img = Image.open("invoice.png").convert("RGB")
+img = Image.open("image.png").convert("RGB")
 messages = [{
     "role": "user",
     "content": [
@@ -231,13 +232,13 @@ messages = [{
     ],
 }]
 prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-enc = processor(text=prompt, images=[img], return_tensors="pt").to(model.device)
+model_input = processor(text=prompt, images=[img], return_tensors="pt").to(model.device)
 
 with torch.no_grad():
-    out = model.generate(**enc, temperature = 0.7, max_new_tokens=5000)
+    model_output = model.generate(**model_input, temperature = 0.7, max_new_tokens=5000)
 
-out = processor.decode(out[0])
-
-reasoning = out.split("<thinking>")[1].split("</thinking>")[0]
-answer  = out.split("<answer>")[1].split("</answer>")[0]
+result = processor.decode(model_output[0])
+reasoning = result.split("<think>")[1].split("</think>")[0]
+answer  = result.split("<answer>")[1].split("</answer>")[0]
+print(answer)
 ```
